@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getInvitationById, updateInvitation } from '@/lib/shared-store';
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const inv = getInvitationById(id);
-  if (!inv) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json(inv);
+  try {
+    const { getInvitationById } = await import('@/lib/prisma/db');
+    const inv = await getInvitationById(id);
+    if (!inv) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    return NextResponse.json(inv);
+  } catch {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
-  const inv = updateInvitation(id, body);
-  if (!inv) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  return NextResponse.json(inv);
+  try {
+    const { updateInvitation } = await import('@/lib/prisma/db');
+    const inv = await updateInvitation(id, body);
+    return NextResponse.json(inv);
+  } catch {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
 }

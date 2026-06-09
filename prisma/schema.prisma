@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Invitation {
+  id          String   @id @default(uuid())
+  ownerId     String?  @map("owner_id")
+  title       String
+  slug        String   @unique
+  status      String   @default("draft")
+  brideName   String?  @map("bride_name")
+  groomName   String?  @map("groom_name")
+  brideFullName   String?  @map("bride_full_name")
+  groomFullName   String?  @map("groom_full_name")
+  brideParents    String?  @map("bride_parents")
+  groomParents    String?  @map("groom_parents")
+  brideIg     String?  @map("bride_ig")
+  groomIg     String?  @map("groom_ig")
+  eventDate   String?  @map("event_date")
+  timezone    String   @default("Asia/Jakarta")
+  theme       Json     @default("{}")
+  settings    Json     @default("{}")
+  whiteLabel  Json?    @default("{}") @map("white_label")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  guests          Guest[]
+  vendors         Vendor[]
+  seatingTables   SeatingTable[]
+  timelineItems   TimelineItem[]
+  budgetCategories BudgetCategory[]
+  wishes          Wish[]
+  bankAccounts    BankAccount[]
+  souvenirStocks  SouvenirStock[]
+
+  @@map("invitations")
+}
+
+model Guest {
+  id          String   @id @default(uuid())
+  invitationId String  @map("invitation_id")
+  guestName   String   @map("guest_name")
+  phone       String?
+  category    String?
+  paxAllocated Int     @default(1) @map("pax_allocated")
+  tableNumber String?  @map("table_number")
+  tableName   String?  @map("table_name")
+  invitationGivenStatus String  @default("Belum Diberikan") @map("invitation_given_status")
+  guestToken  String   @unique @map("guest_token")
+  qrHash      String?  @unique @map("qr_hash")
+  notes       String?
+  rsvpStatus  String?  @map("rsvp_status")
+  paxConfirmed Int     @default(0) @map("pax_confirmed")
+  isCheckedIn Boolean  @default(false) @map("is_checked_in")
+  isSouvenirClaimed Boolean @default(false) @map("is_souvenir_claimed")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
+  @@map("guests")
+}
+
+model Vendor {
+  id          String  @id @default(uuid())
+  invitationId String @map("invitation_id")
+  name        String
+  category    String?
+  contact     String?
+  cost        BigInt  @default(0)
+  paid        BigInt  @default(0)
+  status      String  @default("Belum Bayar")
+  notes       String?
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@map("vendors")
+}
+
+model SeatingTable {
+  id          String @id @default(uuid())
+  invitationId String @map("invitation_id")
+  name        String
+  section     String?
+  capacity    Int    @default(10)
+  seatsTaken  Int    @default(0) @map("seats_taken")
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@map("seating_tables")
+}
+
+model TimelineItem {
+  id          String @id @default(uuid())
+  invitationId String @map("invitation_id")
+  time        String?
+  activity    String?
+  location    String?
+  pic         String?
+  sortOrder   Int    @default(0) @map("sort_order")
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@map("timeline_items")
+}
+
+model BudgetCategory {
+  id          String  @id @default(uuid())
+  invitationId String @map("invitation_id")
+  name        String
+  budget      BigInt  @default(0)
+  spent       BigInt  @default(0)
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@map("budget_categories")
+}
+
+model Wish {
+  id          String   @id @default(uuid())
+  invitationId String  @map("invitation_id")
+  senderName  String?  @map("sender_name")
+  message     String?
+  isVisible   Boolean  @default(true) @map("is_visible")
+  createdAt   DateTime @default(now()) @map("created_at")
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@map("wishes")
+}
+
+model BankAccount {
+  id          String @id @default(uuid())
+  invitationId String @map("invitation_id")
+  bankName    String? @map("bank_name")
+  accountNumber String? @map("account_number")
+  accountHolder String? @map("account_holder")
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@map("bank_accounts")
+}
+
+model SouvenirStock {
+  id          String @id @default(uuid())
+  invitationId String @unique @map("invitation_id")
+  total       Int    @default(0)
+  claimed     Int    @default(0)
+  remaining   Int    @default(0)
+  alertThreshold Int @default(20) @map("alert_threshold")
+  invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  @@map("souvenir_stocks")
+}

@@ -1,6 +1,15 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getDashboardStats } from '@/lib/shared-store';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
-  return NextResponse.json(getDashboardStats());
+  try {
+    const { getInvitations, getDashboardStatsDb } = await import('@/lib/prisma/db');
+    const invitations = await getInvitations();
+    const invId = invitations[0]?.id || '';
+    if (!invId) throw new Error('No invitations');
+    const stats = await getDashboardStatsDb(invId);
+    return NextResponse.json(stats);
+  } catch {
+    const { getDashboardStats } = await import('@/lib/shared-store');
+    return NextResponse.json(getDashboardStats());
+  }
 }

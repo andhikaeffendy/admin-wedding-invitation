@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getEventReport } from '@/lib/wo-store';
 
 export async function GET(req: NextRequest) {
   const invId = req.nextUrl.searchParams.get('invitation_id') || 'inv-001';
-  return NextResponse.json(getEventReport(invId));
+  try {
+    const { getEventReport } = await import('@/lib/prisma/db');
+    return NextResponse.json(await getEventReport(invId));
+  } catch {
+    const { getEventReport: f } = await import('@/lib/wo-store');
+    return NextResponse.json(f(invId));
+  }
 }
