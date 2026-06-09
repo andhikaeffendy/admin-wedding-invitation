@@ -4,7 +4,7 @@ import { DATA_MODE, getSupabase } from './supabase/client';
 const BUCKET = 'wedding-media';
 
 export async function uploadFile(file: File, invitationId: string, role: string): Promise<{ url: string; path: string } | null> {
-  if (DATA_MODE === 'dummy') {
+  if (DATA_MODE === 'local') {
     // Dummy: simulate upload with data URL
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -29,7 +29,7 @@ export async function uploadFile(file: File, invitationId: string, role: string)
 }
 
 export async function deleteFile(path: string): Promise<boolean> {
-  if (DATA_MODE === 'dummy') return true;
+  if (DATA_MODE === 'local') return true;
 
   const supabase = getSupabase();
   if (!supabase) return false;

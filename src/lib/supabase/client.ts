@@ -18,6 +18,10 @@ export function getDb() {
   return supabase;
 }
 
+export function getSupabase() {
+  return supabase;
+}
+
 export function isSupabaseMode() {
   return DATA_MODE === 'supabase';
 }
