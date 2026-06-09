@@ -1,25 +1,23 @@
-// Supabase client with auto-fallback to dummy data
+// Supabase client — auto-detects configuration
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const isConfigured = !!(supabaseUrl && supabaseAnonKey && supabaseUrl.includes('supabase.co'));
 
-const isSupabaseConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl !== 'your-project-url';
-
-export const supabase = isSupabaseConfigured
+export const supabase = isConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: { persistSession: true, autoRefreshToken: true },
       db: { schema: 'public' },
     })
   : null;
 
-export function getSupabase() {
+export const DATA_MODE = isConfigured ? 'supabase' : 'local';
+
+export function getDb() {
   return supabase;
 }
 
-export function isUsingSupabase() {
-  return isSupabaseConfigured;
+export function isSupabaseMode() {
+  return DATA_MODE === 'supabase';
 }
-
-// Dummy mode indicator
-export const DATA_MODE: 'supabase' | 'dummy' = isSupabaseConfigured ? 'supabase' : 'dummy';

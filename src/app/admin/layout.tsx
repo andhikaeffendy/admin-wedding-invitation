@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import {
   LayoutDashboard, Heart, Users, Image, QrCode, FileSpreadsheet,
   Settings, LogOut, Menu, X, ChevronLeft, Bell, Crown, Shield, Eye,
-  MapPin, ShoppingBag, Clock, Wallet, FileText, Send, Building
+  MapPin, ShoppingBag, Clock, Wallet, FileText, Send, Building, Database as DbIcon
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { roleLabels } from "@/lib/accounts";
@@ -24,6 +24,7 @@ const allNavItems = [
   { href: "/admin/budget", label: "Budget", icon: Wallet, roles: ['super_admin', 'editor'] },
   { href: "/admin/reports", label: "Report", icon: FileText, roles: ['super_admin', 'editor'] },
   { href: "/admin/exports", label: "Export", icon: FileSpreadsheet, roles: ['super_admin', 'editor', 'viewer'] },
+  { href: "/admin/setup", label: "Database", icon: DbIcon, roles: ['super_admin'] },
 ];
 
 const roleIcons: Record<string, any> = {
