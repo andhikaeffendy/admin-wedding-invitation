@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "env": {
+    "NEXT_PUBLIC_SITE_URL": "https://admin-wedding-invitation.vercel.app",
+    "NEXT_PUBLIC_WEDDING_URL": "https://wedding-invitation.vercel.app"
+  }
+}

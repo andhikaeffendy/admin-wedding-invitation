@@ -1,26 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&display=swap') layer(base);
+
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #F7F1E6;
+  --color-foreground: #22382D;
+  --color-forest: #22382D;
+  --color-olive: #6F7F55;
+  --color-sage: #A9B89B;
+  --color-cream: #F7F1E6;
+  --color-gold: #C9A86A;
+  --color-terracotta: #B86B4B;
+  --font-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --radius-card: 1rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer base {
+  * { box-sizing: border-box; }
+  body {
+    background: #f8f7f4;
+    color: #22382D;
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  .btn-primary-admin {
+    @apply bg-[#22382D] text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200
+    hover:bg-[#1a2a22] hover:shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary-admin {
+    @apply bg-[#6F7F55] text-white px-5 py-2.5 rounded-lg font-medium text-sm transition-all duration-200
+    hover:bg-[#5d6b47] active:scale-[0.98];
+  }
+  .btn-outline-admin {
+    @apply border border-[#22382D]/20 text-[#22382D] px-4 py-2 rounded-lg text-sm font-medium
+    hover:bg-[#22382D]/5 transition-colors;
+  }
+  .btn-danger-admin {
+    @apply bg-[#B86B4B] text-white px-5 py-2.5 rounded-lg font-medium text-sm
+    hover:bg-[#a55a3e] transition-colors;
+  }
+  .btn-ghost-admin {
+    @apply text-[#6F7F55] px-3 py-2 rounded-lg text-sm hover:bg-[#6F7F55]/10 transition-colors;
+  }
+  .card-admin {
+    @apply bg-white rounded-xl border border-[#22382D]/8 shadow-sm p-5;
+  }
+  .input-admin {
+    @apply w-full px-4 py-2.5 rounded-lg border border-[#22382D]/15 bg-white text-sm text-[#22382D]
+    placeholder:text-[#A9B89B] focus:outline-none focus:ring-2 focus:ring-[#6F7F55]/30 focus:border-[#6F7F55]
+    transition-all;
+  }
+  .label-admin {
+    @apply block text-sm font-medium text-[#22382D] mb-1.5;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success { @apply bg-[#6F7F55]/10 text-[#6F7F55]; }
+  .badge-warning { @apply bg-[#C9A86A]/10 text-[#C9A86A]; }
+  .badge-danger { @apply bg-[#B86B4B]/10 text-[#B86B4B]; }
+  .badge-info { @apply bg-[#A9B89B]/10 text-[#6F7F55]; }
+  .badge-neutral { @apply bg-gray-100 text-gray-600; }
 }
