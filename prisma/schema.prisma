@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Invitation {
@@ -27,7 +28,6 @@ model Invitation {
   whiteLabel  Json?    @default("{}") @map("white_label")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-
   guests          Guest[]
   vendors         Vendor[]
   seatingTables   SeatingTable[]
@@ -58,7 +58,6 @@ model Guest {
   isCheckedIn Boolean  @default(false) @map("is_checked_in")
   isSouvenirClaimed Boolean @default(false) @map("is_souvenir_claimed")
   createdAt   DateTime @default(now()) @map("created_at")
-
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
 
   @@map("guests")
@@ -75,6 +74,7 @@ model Vendor {
   status      String  @default("Belum Bayar")
   notes       String?
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@map("vendors")
 }
 
@@ -86,6 +86,7 @@ model SeatingTable {
   capacity    Int    @default(10)
   seatsTaken  Int    @default(0) @map("seats_taken")
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@map("seating_tables")
 }
 
@@ -98,6 +99,7 @@ model TimelineItem {
   pic         String?
   sortOrder   Int    @default(0) @map("sort_order")
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@map("timeline_items")
 }
 
@@ -108,6 +110,7 @@ model BudgetCategory {
   budget      BigInt  @default(0)
   spent       BigInt  @default(0)
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@map("budget_categories")
 }
 
@@ -119,6 +122,7 @@ model Wish {
   isVisible   Boolean  @default(true) @map("is_visible")
   createdAt   DateTime @default(now()) @map("created_at")
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@map("wishes")
 }
 
@@ -129,6 +133,7 @@ model BankAccount {
   accountNumber String? @map("account_number")
   accountHolder String? @map("account_holder")
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@map("bank_accounts")
 }
 
@@ -140,5 +145,6 @@ model SouvenirStock {
   remaining   Int    @default(0)
   alertThreshold Int @default(20) @map("alert_threshold")
   invitation Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+
   @@map("souvenir_stocks")
 }
