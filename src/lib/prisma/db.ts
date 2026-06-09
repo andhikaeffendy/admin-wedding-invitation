@@ -31,6 +31,7 @@ export async function createInvitation(data: any) {
     bride_name: data.bride_name || null,
     groom_name: data.groom_name || null,
     event_date: data.event_date || null,
+    theme: data.theme || { id: 'modern-organic-luxury', primaryColor: '#22382D', secondaryColor: '#6F7F55', accentColor: '#A9B89B', bgColor: '#F7F1E6', textColor: '#22382D', goldColor: '#C9A86A' },
   }).select().single();
   if (error) throw new Error(error.message);
   return result;
