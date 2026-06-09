@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const invId = req.nextUrl.searchParams.get('invitation_id') || 'inv-001';
   try {
-    const { getPendingRsvp } = await import('@/lib/prisma/db');
-    const pending = await getPendingRsvp(invId);
-    const messages = pending.map((g: any) => ({
-      guest_name: g.guestName,
+    const { getSupabase } = await import('@/lib/supabase/client');
+    const sb = getSupabase();
+    if (!sb) throw new Error('No Supabase');
+    const { data } = await sb.from('guests').select('*').is('rsvp_status', null).not('phone', 'is', null);
+    const messages = (data || []).map((g: any) => ({
+      guest_name: g.guest_name,
       phone: g.phone,
-      waLink: `https://wa.me/${g.phone?.replace(/^0/, '62')}?text=${encodeURIComponent(`Halo ${g.guestName}, kami mengingatkan untuk konfirmasi kehadiran. Terima kasih! 🙏`)}`,
+      waLink: `https://wa.me/${g.phone?.replace(/^0/, '62')}?text=${encodeURIComponent(`Halo ${g.guest_name}, kami mengingatkan untuk konfirmasi kehadiran. Terima kasih! 🙏`)}`,
     }));
-    return NextResponse.json({ total: pending.length, messages });
+    return NextResponse.json({ total: messages.length, messages });
   } catch {
-    const { getPendingRsvpGuests: f } = await import('@/lib/wo-store');
-    const pending = f(invId);
-    return NextResponse.json({ total: pending.length, messages: [] });
+    return NextResponse.json({ total: 0, messages: [] });
   }
 }

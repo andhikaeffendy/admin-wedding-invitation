@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const invId = req.nextUrl.searchParams.get('invitation_id') || 'inv-001';
   try {
-    const { getSeatingTables } = await import('@/lib/prisma/db');
-    return NextResponse.json(await getSeatingTables(invId));
+    const { getSupabase } = await import('@/lib/supabase/client');
+    const sb = getSupabase();
+    if (!sb) throw new Error('No Supabase');
+    const { data: invs } = await sb.from('invitations').select('id').limit(1);
+    const invId = invs?.[0]?.id;
+    if (!invId) throw new Error('No invitation');
+    const { data } = await sb.from('seating_tables').select('*').eq('invitation_id', invId);
+    return NextResponse.json(data || []);
   } catch {
     const { getSeatingTables: f } = await import('@/lib/wo-store');
-    return NextResponse.json(f(invId));
+    return NextResponse.json(f('inv-001'));
   }
 }

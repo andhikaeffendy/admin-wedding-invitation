@@ -1,22 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
-  const invId = req.nextUrl.searchParams.get('invitation_id') || 'inv-001';
   try {
-    const { getVendors } = await import('@/lib/prisma/db');
-    return NextResponse.json(await getVendors(invId));
+    const { getSupabase } = await import('@/lib/supabase/client');
+    const sb = getSupabase();
+    if (!sb) throw new Error('No Supabase');
+    const { data: invs } = await sb.from('invitations').select('id').limit(1);
+    const invId = invs?.[0]?.id;
+    if (!invId) throw new Error('No invitation');
+    const { data } = await sb.from('vendors').select('*').eq('invitation_id', invId);
+    return NextResponse.json(data || []);
   } catch {
     const { getVendors: f } = await import('@/lib/wo-store');
-    return NextResponse.json(f(invId));
+    return NextResponse.json(f('inv-001'));
   }
 }
 export async function POST(req: NextRequest) {
-  const { invitation_id, ...data } = await req.json();
+  const body = await req.json();
   try {
-    const { addVendor } = await import('@/lib/prisma/db');
-    return NextResponse.json(await addVendor(invitation_id || 'inv-001', data));
-  } catch {
-    const { addVendor: f } = await import('@/lib/wo-store');
-    return NextResponse.json(f(invitation_id || 'inv-001', data));
+    const { getSupabase } = await import('@/lib/supabase/client');
+    const sb = getSupabase();
+    if (!sb) throw new Error('No Supabase');
+    const { data: invs } = await sb.from('invitations').select('id').limit(1);
+    const { data } = await sb.from('vendors').insert({ invitation_id: (invs?.[0]?.id || 'inv-001'), ...body }).select().single();
+    return NextResponse.json(data);
+  } catch (e: any) {
+    return NextResponse.json({ error: e.message }, { status: 400 });
   }
 }
