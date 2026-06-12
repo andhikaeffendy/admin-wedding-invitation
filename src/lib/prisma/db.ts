@@ -1,6 +1,10 @@
 // Database service using Supabase JS client (HTTPS) instead of Prisma direct connection
 // This works reliably on Vercel serverless because it uses HTTPS (port 443)
+import crypto from 'crypto';
 import { supabase } from '../supabase/client';
+
+function genToken(): string { return 'tok-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12); }
+function genHash(): string { return 'qr-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12); }
 
 async function sb() {
   if (!supabase) throw new Error('Supabase not configured');
@@ -27,10 +31,17 @@ export async function createInvitation(data: any) {
   const { data: result, error } = await (await sb()).from('invitations').insert({
     title: data.title,
     slug: data.slug,
-    status: data.status || 'draft',
+    status: data.status || 'published',
     bride_name: data.bride_name || null,
     groom_name: data.groom_name || null,
+    bride_full_name: data.bride_full_name || null,
+    groom_full_name: data.groom_full_name || null,
+    bride_parents: data.bride_parents || null,
+    groom_parents: data.groom_parents || null,
+    bride_ig: data.bride_ig || null,
+    groom_ig: data.groom_ig || null,
     event_date: data.event_date || null,
+    settings: data.settings || {},
     theme: data.theme || { id: 'modern-organic-luxury', primaryColor: '#22382D', secondaryColor: '#6F7F55', accentColor: '#A9B89B', bgColor: '#F7F1E6', textColor: '#22382D', goldColor: '#C9A86A' },
   }).select().single();
   if (error) throw new Error(error.message);
@@ -42,6 +53,19 @@ export async function updateInvitation(id: string, data: any) {
   return result;
 }
 
+export async function deleteInvitation(id: string) {
+  await (await sb()).from('guests').delete().eq('invitation_id', id);
+  await (await sb()).from('wishes').delete().eq('invitation_id', id);
+  await (await sb()).from('bank_accounts').delete().eq('invitation_id', id);
+  await (await sb()).from('vendors').delete().eq('invitation_id', id);
+  await (await sb()).from('seating_tables').delete().eq('invitation_id', id);
+  await (await sb()).from('timeline_items').delete().eq('invitation_id', id);
+  await (await sb()).from('budget_categories').delete().eq('invitation_id', id);
+  await (await sb()).from('souvenir_stocks').delete().eq('invitation_id', id);
+  await (await sb()).from('invitations').delete().eq('id', id);
+  return true;
+}
+
 // ==================== GUESTS ====================
 export async function getGuests(invitationId?: string) {
   let q = (await sb()).from('guests').select('*').order('created_at', { ascending: false });
@@ -51,7 +75,7 @@ export async function getGuests(invitationId?: string) {
 }
 
 export async function addGuest(invitationId: string, data: any) {
-  const token = 'tok-' + Math.random().toString(36).slice(2, 12);
+  const token = genToken();
   const { data: result } = await (await sb()).from('guests').insert({
     invitation_id: invitationId,
     guest_name: data.guest_name,
@@ -59,7 +83,7 @@ export async function addGuest(invitationId: string, data: any) {
     category: data.category || 'Umum',
     pax_allocated: data.pax_allocated || 1,
     guest_token: token,
-    qr_hash: 'qr-' + Math.random().toString(36).slice(2, 12),
+    qr_hash: genHash(),
     invitation_given_status: 'Belum Diberikan',
     notes: data.notes || '',
   }).select().single();
@@ -79,6 +103,13 @@ export async function processScanDb(token: string) {
     return { status: 'SUCCESS_SOUVENIR', guest_name: guest.guest_name, category: guest.category || '', pax: guest.pax_allocated, table: guest.table_name || '-', message: 'Souvenir berhasil!' };
   }
   return { status: 'ALREADY_COMPLETED', guest_name: guest.guest_name, message: 'QR sudah digunakan 2x' };
+}
+
+// ==================== DELETE GUEST ====================
+export async function deleteGuest(id: string) {
+  const { error } = await (await sb()).from('guests').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  return true;
 }
 
 // ==================== VENDORS ====================
@@ -161,6 +192,54 @@ export async function getEventReport(invId: string) {
 export async function getPendingRsvp(invId: string) {
   const { data } = await (await sb()).from('guests').select('*').eq('invitation_id', invId).is('rsvp_status', null).not('phone', 'is', null);
   return data || [];
+}
+
+// ==================== GALLERY ====================
+export async function getGallery(invId: string) {
+  const { data } = await (await sb()).from('gallery').select('*').eq('invitation_id', invId).order('sort_order', { ascending: true });
+  return data || [];
+}
+
+export async function addGalleryItem(invId: string, data: { role: string; public_url: string; alt_text?: string; sort_order?: number }) {
+  const { data: result } = await (await sb()).from('gallery').insert({
+    invitation_id: invId,
+    role: data.role || 'gallery',
+    public_url: data.public_url,
+    alt_text: data.alt_text || '',
+    sort_order: data.sort_order || 0,
+  }).select().single();
+  return result;
+}
+
+export async function deleteGalleryItem(id: string) {
+  const { error } = await (await sb()).from('gallery').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  return true;
+}
+
+// ==================== LOVE STORIES ====================
+export async function getLoveStories(invId: string) {
+  const { data } = await (await sb()).from('love_stories').select('*').eq('invitation_id', invId).order('sort_order', { ascending: true });
+  return data || [];
+}
+
+export async function addLoveStory(invId: string, data: { title: string; description: string; date?: string; icon?: string }) {
+  const { data: result } = await (await sb()).from('love_stories').insert({
+    invitation_id: invId,
+    title: data.title || '',
+    description: data.description || '',
+    date: data.date || '',
+    icon: data.icon || '♡',
+    is_visible: true,
+    sort_order: 0,
+  }).select().single();
+  return result;
+}
+
+export async function deleteLoveStory(id: string) {
+  const { error } = await (await sb()).from('love_stories').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+  return true;
 }
 
 // ==================== ALL CLIENTS ====================

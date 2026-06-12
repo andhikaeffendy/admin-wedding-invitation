@@ -27,12 +27,21 @@ export default function ScannerPage() {
 
   const handleScan = async () => {
     if (!searchToken.trim()) return;
+    let token = searchToken.trim();
+    // Auto-extract guest token from URL if pasted
+    if (token.startsWith('http://') || token.startsWith('https://')) {
+      try {
+        const url = new URL(token);
+        const guestParam = url.searchParams.get('guest');
+        if (guestParam) token = guestParam;
+      } catch {}
+    }
     setScanning(true);
     try {
       const res = await fetch('/api/data/scan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: searchToken.trim() }),
+        body: JSON.stringify({ token }),
       });
       const data = await res.json();
       if (!online) {

@@ -1,7 +1,11 @@
 // Supabase Database Layer — replaces shared-store.ts for production
 // All functions work with Supabase when configured, fall back to local JSON otherwise.
+import crypto from 'crypto';
 import { supabase, isSupabaseMode } from './client';
 import { readStore, writeStore } from '../shared-store';
+
+function genToken(): string { return 'tok-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12); }
+function genHash(): string { return 'qr-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12); }
 
 // ===== GENERIC HELPERS =====
 function sb() {
@@ -69,11 +73,11 @@ export async function getGuestByToken(token: string) {
 }
 
 export async function addGuest(invitationId: string, data: any) {
-  const token = 'tok-' + Math.random().toString(36).slice(2, 12);
+  const token = genToken();
   const guest = {
     invitation_id: invitationId, guest_name: data.guest_name, phone: data.phone || '',
     category: data.category || 'Umum', pax_allocated: data.pax_allocated || 1,
-    guest_token: token, qr_hash: 'qr-' + Math.random().toString(36).slice(2, 12),
+    guest_token: token, qr_hash: genHash(),
     invitation_given_status: 'Belum Diberikan', notes: data.notes || '',
   };
   if (!isSupabaseMode()) {

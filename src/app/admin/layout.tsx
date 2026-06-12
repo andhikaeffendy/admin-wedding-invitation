@@ -15,6 +15,7 @@ const allNavItems = [
   { href: "/admin/clients", label: "Multi-Event", icon: Building, roles: ['super_admin'] },
   { href: "/admin/invitations", label: "Undangan", icon: Heart, roles: ['super_admin', 'editor', 'viewer'] },
   { href: "/admin/invitations/inv-001/guests", label: "Tamu", icon: Users, roles: ['super_admin', 'editor', 'scanner'] },
+  { href: "/admin/invitations/inv-001/send", label: "Kirim", icon: Send, roles: ['super_admin', 'editor'] },
   { href: "/admin/seating", label: "Seating Plan", icon: MapPin, roles: ['super_admin', 'editor'] },
   { href: "/admin/invitations/inv-001/media", label: "Media", icon: Image, roles: ['super_admin', 'editor'] },
   { href: "/admin/scanner", label: "QR Scanner", icon: QrCode, roles: ['super_admin', 'editor', 'scanner'] },
@@ -40,18 +41,26 @@ const roleColors: Record<string, string> = {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
   const { account, logout, isLoggedIn } = useAuth();
 
   const isLoginPage = pathname === "/admin/login";
 
-  // Redirect unauthenticated users to login
+  // Wait for auth to initialize before redirecting
   useEffect(() => {
-    if (!isLoggedIn && !isLoginPage) {
+    // Small delay to ensure AuthProvider has finished restoring from localStorage
+    const timer = setTimeout(() => setAuthReady(true), 50);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Redirect unauthenticated users to login (only after auth is ready)
+  useEffect(() => {
+    if (authReady && !isLoggedIn && !isLoginPage) {
       router.replace("/admin/login");
     }
-  }, [isLoggedIn, isLoginPage, router]);
+  }, [authReady, isLoggedIn, isLoginPage, router]);
 
   const handleLogout = () => {
     logout();
@@ -63,7 +72,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return <>{children}</>;
   }
 
-  // Not authenticated — show loading while redirecting
+  // Auth not ready yet — show loading without redirecting
+  if (!authReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8f7f4]">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-[#C9A86A] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[#A9B89B] text-sm">Memuat...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Not authenticated after init — show loading while redirecting
   if (!isLoggedIn || !account) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f8f7f4]">
@@ -83,20 +104,30 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen flex bg-[#f8f7f4]">
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          role="presentation"
+          aria-hidden="true"
+        />
       )}
 
       {/* Sidebar */}
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#22382D] text-white flex flex-col
-        transition-transform duration-300 lg:translate-x-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
+      <aside
+        id="admin-sidebar"
+        className={`
+          fixed lg:static inset-y-0 left-0 z-50 w-64 bg-[#22382D] text-white flex flex-col
+          transition-transform duration-300 lg:translate-x-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}
+        role="navigation"
+        aria-label="Navigasi utama"
+      >
         {/* Logo */}
         <div className="p-5 border-b border-white/10">
           <div className="flex items-center justify-between">
-            <Link href="/admin/dashboard" className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-[#C9A86A] flex items-center justify-center">
+            <Link href="/admin/dashboard" className="flex items-center gap-3" aria-label="Dashboard">
+              <div className="w-9 h-9 rounded-lg bg-[#C9A86A] flex items-center justify-center" aria-hidden="true">
                 <Heart size={18} className="text-white" />
               </div>
               <div>
@@ -104,26 +135,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <p className="text-[#A9B89B] text-xs">Admin Panel</p>
               </div>
             </Link>
-            <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-white/60 hover:text-white">
-              <X size={20} />
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-white/60 hover:text-white"
+              aria-label="Tutup menu navigasi"
+            >
+              <X size={20} aria-hidden="true" />
             </button>
           </div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto" aria-label="Menu halaman">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               onClick={() => setSidebarOpen(false)}
+              aria-current={isActive(item.href) ? 'page' : undefined}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
                 isActive(item.href)
                   ? 'bg-[#C9A86A]/20 text-[#C9A86A] font-medium'
                   : 'text-[#A9B89B] hover:bg-white/5 hover:text-white'
               }`}
             >
-              <item.icon size={18} />
+              <item.icon size={18} aria-hidden="true" />
               {item.label}
             </Link>
           ))}
@@ -150,8 +186,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-[#22382D]/5 px-4 md:px-6 py-3 flex items-center justify-between">
-          <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[#22382D]">
-            <Menu size={22} />
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden text-[#22382D]"
+            aria-label="Buka menu navigasi"
+            aria-expanded={sidebarOpen}
+            aria-controls="admin-sidebar"
+          >
+            <Menu size={22} aria-hidden="true" />
           </button>
 
           <div className="hidden lg:flex items-center gap-2 text-sm text-[#A9B89B]">
@@ -161,8 +203,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-4">
-            <button className="relative text-[#6F7F55] hover:text-[#22382D] transition-colors">
-              <Bell size={20} />
+            <button
+              className="relative text-[#6F7F55] hover:text-[#22382D] transition-colors"
+              aria-label="Notifikasi"
+            >
+              <Bell size={20} aria-hidden="true" />
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#B86B4B] text-white text-xs flex items-center justify-center">1</span>
             </button>
 
@@ -187,7 +232,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </header>
 
         {/* Content */}
-        <main className="flex-1 p-4 md:p-6 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 overflow-auto" id="admin-content" tabIndex={-1}>
           {children}
         </main>
       </div>

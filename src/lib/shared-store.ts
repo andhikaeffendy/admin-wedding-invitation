@@ -1,8 +1,20 @@
 // Shared store — reads/writes store.json (single source of truth for both projects)
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 
 const STORE_PATH = path.join(process.cwd(), '..', 'shared', 'store.json');
+
+// Cryptographically secure token generation
+function generateToken(): string {
+  return 'tok-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+}
+function generateQRHash(): string {
+  return 'qr-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+}
+function generateShortId(): string {
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+}
 
 interface Store {
   invitations: any[];
@@ -41,14 +53,29 @@ export function getInvitationById(id: string) {
 
 export function createInvitation(data: any) {
   const store = readStore();
+  const { bank_accounts, ...invData } = data;
   const newInv = {
     id: `inv-${Date.now()}`,
-    ...data,
-    status: data.status || 'draft',
+    ...invData,
+    status: data.status || 'published',
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
   store.invitations.push(newInv);
+  // Store bank accounts
+  if (bank_accounts && Array.isArray(bank_accounts)) {
+    const bankRecords = bank_accounts
+      .filter((b: any) => b.account_number)
+      .map((b: any) => ({
+        id: `bank-${Date.now()}-${generateShortId()}`,
+        invitation_id: newInv.id,
+        bank_name: b.bank_name,
+        account_number: b.account_number,
+        account_holder: b.account_holder,
+      }));
+    store.bank_accounts = store.bank_accounts || [];
+    store.bank_accounts.push(...bankRecords);
+  }
   writeStore(store);
   return newInv;
 }
@@ -73,7 +100,7 @@ export function getGuestByToken(token: string) {
 
 export function addGuest(invitationId: string, data: any) {
   const store = readStore();
-  const token = 'tok-' + Math.random().toString(36).slice(2, 12);
+  const token = generateToken();
   const newGuest = {
     id: `g-${Date.now()}`,
     invitation_id: invitationId,
@@ -83,7 +110,7 @@ export function addGuest(invitationId: string, data: any) {
     pax_allocated: data.pax_allocated || 1,
     invitation_given_status: 'Belum Diberikan',
     guest_token: token,
-    qr_hash: 'qr-' + Math.random().toString(36).slice(2, 12),
+    qr_hash: generateQRHash(),
     notes: data.notes || '',
     rsvp_status: null,
     pax_confirmed: 0,
@@ -109,6 +136,19 @@ export function deleteGuest(id: string) {
   const idx = store.guests.findIndex((g: any) => g.id === id);
   if (idx === -1) return false;
   store.guests.splice(idx, 1);
+  writeStore(store);
+  return true;
+}
+
+export function deleteInvitation(id: string) {
+  const store = readStore();
+  const idx = store.invitations.findIndex((i: any) => i.id === id);
+  if (idx === -1) return false;
+  // Delete related data
+  store.guests = store.guests.filter((g: any) => g.invitation_id !== id);
+  store.wishes = store.wishes.filter((w: any) => w.invitation_id !== id);
+  store.bank_accounts = store.bank_accounts.filter((b: any) => b.invitation_id !== id);
+  store.invitations.splice(idx, 1);
   writeStore(store);
   return true;
 }

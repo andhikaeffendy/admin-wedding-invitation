@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
     const { data } = await sb.from('vendors').insert({ invitation_id: (invs?.[0]?.id || 'inv-001'), ...body }).select().single();
     return NextResponse.json(data);
   } catch (e: any) {
-    return NextResponse.json({ error: e.message }, { status: 400 });
+    console.error('POST vendor error:', e.message);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

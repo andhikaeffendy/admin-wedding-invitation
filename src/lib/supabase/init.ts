@@ -108,7 +108,8 @@ export async function initDatabase() {
 
     return { success: true, message: 'Database already initialized' };
   } catch (e: any) {
-    return { success: false, message: e.message };
+    console.error('DB init error:', e.message);
+    return { success: false, message: 'Database initialization failed. Check server logs.' };
   }
 }
 

@@ -28,7 +28,7 @@ function saveQueue(queue: OfflineScanRecord[]) {
 export function addToOfflineQueue(guestToken: string, scanType: 'checkin' | 'souvenir', guestName?: string): OfflineScanRecord {
   const queue = getQueue();
   const record: OfflineScanRecord = {
-    id: `offline-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+    id: `offline-${Date.now()}-${globalThis.crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`,
     guestToken,
     scanType,
     scannedAt: new Date().toISOString(),

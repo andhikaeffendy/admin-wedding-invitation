@@ -5,6 +5,8 @@ import { Download, FileSpreadsheet, Check, Users, Gift, FileText } from "lucide-
 import { getGuests } from "@/lib/dummy-data";
 import { exportToCsv, exportToExcel } from "@/lib/excel/import-export";
 
+const WEDDING_URL = process.env.NEXT_PUBLIC_WEDDING_URL || 'https://wedding-invitation-liart-alpha.vercel.app';
+
 export default function ExportsPage() {
   const invId = 'inv-001-andhika-laila';
   const guests = getGuests(invId);
@@ -35,7 +37,7 @@ export default function ExportsPage() {
       'Jam Hadir': g.is_checked_in ? '14:30 WIB' : '-',
       'Souvenir': g.is_souvenir_claimed ? 'Ya' : 'Tidak',
       'Jam Souvenir': g.is_souvenir_claimed ? '15:00 WIB' : '-',
-      'Link Personal': `${typeof window !== 'undefined' ? window.location.origin : ''}/i/andhika-laila?guest=${g.guest_token}`,
+      'Link Personal': `${WEDDING_URL}/i/andhika-laila?guest=${g.guest_token}`,
       'Notes': g.notes || '',
     }));
     exportToCsv(data, 'export-tamu-andhika-laila');

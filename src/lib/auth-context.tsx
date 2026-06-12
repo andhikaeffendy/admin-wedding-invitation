@@ -35,8 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (acc: AdminAccount) => {
     setAccount(acc);
     setIsLoggedIn(true);
+    // Strip password before storing — security: never persist credentials
+    const { password: _pw, ...safeAccount } = acc;
     localStorage.setItem('wedding-admin-account', JSON.stringify({
-      ...acc,
+      ...safeAccount,
       lastLogin: new Date().toLocaleString('id-ID'),
     }));
   };

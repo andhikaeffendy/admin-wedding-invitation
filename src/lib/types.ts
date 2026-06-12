@@ -1,6 +1,7 @@
 export interface Invitation {
   id: string; owner_id: string; title: string; slug: string;
   status: 'draft' | 'published' | 'archived';
+  template_id?: string;
   bride_name: string; groom_name: string; event_date: string;
   theme: Record<string, any>; settings: Record<string, any>;
   created_at: string; updated_at: string;

@@ -42,18 +42,26 @@ export default function CameraScanner({ onScan, isScanning }: CameraScannerProps
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width: 250, height: 250 } },
         (decodedText: string) => {
-          // Try to extract token from QR payload
+          // Extract guest token from various QR payload formats
+          let token = decodedText;
           try {
+            // Try JSON payload first (old format: {guest_token: "xxx"})
             const payload = JSON.parse(decodedText);
-            if (payload.guest_token) {
-              stopScanner();
-              onScan(payload.guest_token);
-            }
+            if (payload.guest_token) token = payload.guest_token;
+            else if (payload.token) token = payload.token;
+            else if (payload.guestToken) token = payload.guestToken;
           } catch {
-            // If not JSON, treat as raw token
-            stopScanner();
-            onScan(decodedText);
+            // Not JSON — try URL format: /i/slug?guest=tok-xxx
+            try {
+              const url = new URL(decodedText);
+              const guestParam = url.searchParams.get('guest');
+              if (guestParam) token = guestParam;
+            } catch {
+              // Not a URL either — use raw text
+            }
           }
+          stopScanner();
+          onScan(token);
         },
         () => {} // ignore errors during scan
       );

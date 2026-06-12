@@ -4,7 +4,9 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "env": {
-    "NEXT_PUBLIC_SITE_URL": "https://admin-wedding-invitation.vercel.app",
-    "NEXT_PUBLIC_WEDDING_URL": "https://wedding-invitation.vercel.app"
+    "NEXT_PUBLIC_WEDDING_URL": "https://wedding-invitation-liart-alpha.vercel.app",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://dncmrzyresbhbkazofst.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_CZF2eQKmvFFiXEvSkKFx_g_hcHoowT8",
+    "DATABASE_URL": "postgresql://postgres:weddinginvitation14081997@db.dncmrzyresbhbkazofst.supabase.co:5432/postgres?sslmode=require"
   }
 }

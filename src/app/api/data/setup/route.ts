@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { initDatabase, seedDatabase } from '@/lib/supabase/init';
 import { isSupabaseMode } from '@/lib/supabase/client';
 
@@ -19,10 +19,14 @@ export async function GET() {
     });
   }
 
-  const result = await initDatabase();
-  if (result.success) {
-    const seed = await seedDatabase();
-    return NextResponse.json({ configured: true, mode: 'supabase', init: result, seed });
+  try {
+    const result = await initDatabase();
+    if (result.success) {
+      const seed = await seedDatabase();
+      return NextResponse.json({ configured: true, mode: 'supabase', init: result, seed });
+    }
+    return NextResponse.json({ configured: false, mode: 'supabase', error: result });
+  } catch (error: any) {
+    return NextResponse.json({ configured: false, mode: 'supabase', error: { message: error.message || 'Setup gagal' } }, { status: 500 });
   }
-  return NextResponse.json({ configured: false, mode: 'supabase', error: result });
 }

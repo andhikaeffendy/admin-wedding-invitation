@@ -1,7 +1,35 @@
 "use client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Heart, Users, UserCheck, Gift, TrendingUp, Activity, ArrowUpRight } from "lucide-react";
+import { Heart, Users, UserCheck, Gift, TrendingUp, Activity, ArrowUpRight, Eye, Palette } from "lucide-react";
+
+const WEDDING_URL = process.env.NEXT_PUBLIC_WEDDING_URL || 'https://wedding-invitation-liart-alpha.vercel.app';
+
+// Template demo list
+const TEMPLATE_DEMOS = [
+  { id: 'modern-organic-luxury', name: 'Modern Organic', emoji: '🎋', color: '#22382D' },
+  { id: 'classic-rose-gold', name: 'Classic Rose Gold', emoji: '🌹', color: '#8B5E63' },
+  { id: 'minimal-monochrome', name: 'Minimal Mono', emoji: '⬜', color: '#2D2D2D' },
+  { id: 'tropical-paradise', name: 'Tropical', emoji: '🌴', color: '#1B4332' },
+  { id: 'royal-purple', name: 'Royal Purple', emoji: '💜', color: '#2D1B4E' },
+  { id: 'sakura-pink', name: 'Sakura', emoji: '🌸', color: '#FFB7C5' },
+  { id: 'vintage-kraft', name: 'Vintage Kraft', emoji: '📜', color: '#6B4226' },
+  { id: 'aureum-gold', name: 'Aureum Gold', emoji: '👑', color: '#C9A86A' },
+  { id: 'celestial-night', name: 'Celestial', emoji: '🌙', color: '#0B1930' },
+  { id: 'terracotta-bloom', name: 'Terracotta', emoji: '🏵️', color: '#C7734B' },
+  { id: 'ocean-breeze', name: 'Ocean Breeze', emoji: '🌊', color: '#1B2A4A' },
+  { id: 'jasmine-white', name: 'Jasmine Pure', emoji: '🤍', color: '#C0C4CC' },
+  { id: 'dream-garden', name: 'Dream Garden', emoji: '🪷', color: '#E8B4C8' },
+  { id: 'javanese-elegance', name: 'Javanese', emoji: '🏮', color: '#D4AF37' },
+  { id: 'aire-royale', name: 'Aire Royale', emoji: '💎', color: '#550979' },
+  { id: 'premium-blush', name: 'Premium Blush', emoji: '💗', color: '#F63854' },
+  { id: 'luxury-lavender', name: 'Luxury Lavender', emoji: '🦋', color: '#6B3FA0' },
+  { id: 'exclusive-noir', name: 'Exclusive Noir', emoji: '🖤', color: '#1A1A24' },
+  { id: 'sage-dream', name: 'Sage Dream', emoji: '🌱', color: '#4A6741' },
+  { id: 'eternal-sage-luxury', name: 'Eternal Sage Luxury', emoji: '🌿', color: '#22382D' },
+  { id: 'wekita-elegance', name: 'Wekita Elegance', emoji: '🍃', color: '#0d2518' },
+  { id: 'blush-romance', name: 'Blush Romance', emoji: '💕', color: '#D4A9A7' },
+];
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<any | null>(null);
@@ -45,7 +73,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-[#22382D]">Dashboard</h1>
           <p className="text-[#6F7F55] text-sm">Ringkasan undangan Andhika & Laila</p>
         </div>
-        <a href="/i/andhika-laila" target="_blank" className="btn-outline-admin text-xs flex items-center gap-1">
+        <a href={`${WEDDING_URL}/i/andhika-laila`} target="_blank" className="btn-outline-admin text-xs flex items-center gap-1">
           Preview Undangan <ArrowUpRight size={14} />
         </a>
       </div>
@@ -148,6 +176,28 @@ export default function DashboardPage() {
               <p className="text-xs text-[#6F7F55]">Belum Check-in</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Template Demo Preview */}
+      <div className="card-admin">
+        <h3 className="font-semibold text-[#22382D] mb-4 flex items-center gap-2">
+          <Palette size={18} className="text-[#C9A86A]" /> Template Demo ({TEMPLATE_DEMOS.length} Tema)
+        </h3>
+        <p className="text-xs text-[#A9B89B] mb-4">Klik untuk preview undangan dengan tema berbeda. Setiap tema bisa diakses langsung oleh tamu.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {TEMPLATE_DEMOS.map((tmpl) => (
+            <a
+              key={tmpl.id}
+              href={`${WEDDING_URL}/demo/${tmpl.id}`}
+              target="_blank"
+              className="p-3 rounded-xl border border-[#C9A86A]/10 hover:border-[#C9A86A]/40 hover:shadow-md transition-all text-center group"
+            >
+              <span className="text-2xl block mb-2">{tmpl.emoji}</span>
+              <p className="text-xs font-medium text-[#22382D] group-hover:text-[#C9A86A] transition-colors">{tmpl.name}</p>
+              <Eye size={12} className="inline-block mt-1 text-[#A9B89B] group-hover:text-[#C9A86A]" />
+            </a>
+          ))}
         </div>
       </div>
     </div>

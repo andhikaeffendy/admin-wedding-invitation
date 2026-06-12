@@ -1,9 +1,12 @@
+import crypto from 'crypto';
 import { Invitation, Guest, MediaAsset, Wish } from './types';
 
 const INV_ID = 'inv-001-andhika-laila';
+function genToken(): string { return 'tok-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12); }
+function genHash(): string { return 'qr-' + crypto.randomUUID().replace(/-/g, '').slice(0, 12); }
 
 export const dummyInvitations: Invitation[] = [
-  { id: INV_ID, owner_id: 'u1', title: 'Andhika & Laila', slug: 'andhika-laila', status: 'published', bride_name: 'Laila Nur Azizah, S.Psi', groom_name: 'Andhika Pratama, S.T.', event_date: '2026-08-15', theme: { colors: { forest: '#22382D', olive: '#6F7F55', sage: '#A9B89B', cream: '#F7F1E6', gold: '#C9A86A', terracotta: '#B86B4B' } }, settings: {}, created_at: '2026-01-15', updated_at: '2026-06-01' },
+  { id: INV_ID, owner_id: 'u1', title: 'Andhika & Laila', slug: 'andhika-laila', status: 'published', bride_name: 'Laila Nur Azizah, S.Psi', groom_name: 'Andhika Pratama, S.T.', event_date: '2027-01-30', template_id: 'eternal-sage-luxury', theme: { colors: { forest: '#22382D', olive: '#6F7F55', sage: '#A9B89B', cream: '#F7F1E6', gold: '#C9A86A', terracotta: '#B86B4B' } }, settings: {}, created_at: '2026-01-15', updated_at: '2026-06-01' },
   { id: 'inv-002', owner_id: 'u1', title: 'Rizky & Sarah', slug: 'rizky-sarah', status: 'draft', bride_name: 'Sarah Amalia', groom_name: 'Rizky Hermawan', event_date: '2026-09-20', theme: {}, settings: {}, created_at: '2026-05-01', updated_at: '2026-05-15' },
   { id: 'inv-003', owner_id: 'u1', title: 'Fajar & Anisa', slug: 'fajar-anisa', status: 'draft', bride_name: 'Anisa Rahmawati', groom_name: 'Fajar Nugroho', event_date: '2026-10-10', theme: {}, settings: {}, created_at: '2026-06-01', updated_at: '2026-06-05' },
 ];
@@ -83,8 +86,8 @@ export function addGuest(invitationId: string, guest: Partial<Guest>): Guest {
     category: guest.category || 'Umum',
     pax_allocated: guest.pax_allocated || 1,
     invitation_given_status: 'Belum Diberikan',
-    guest_token: 'tok-' + Math.random().toString(36).slice(2, 12),
-    qr_hash: 'qr-' + Math.random().toString(36).slice(2, 12),
+    guest_token: genToken(),
+    qr_hash: genHash(),
     notes: guest.notes,
     rsvp_status: null,
   };
